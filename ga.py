@@ -6,15 +6,30 @@ import math
 ### GENETIC ALGORITHM
 ###
 
+# Steps TODO:
+# INIT
+# - create sprites with field containg NN
+# - get total amont of weights in each NN in sprite
+# - use num of sprites made and weights in each NN to initalize pop
+# - get weights from pop and insert into NN in sprite
+# UPDATE
+# - sprite.update(inputs)
+# - update each NN in sprite, update sprite accoring to outputs of NN
+# - updte fitness of each sprite, update pop genome fitness accordingly
+# GENERATION OVER
+# - evolve to create new pop
+# - insert new weights int NN in sprite
+# - reset sprite & fitness
+
 class Neuron:
 	def __init__(self, inputs):
 		# num inputs into neuron plus additional weight for the bias
 		self.numInputs = inputs + 1
 		# weights for each input
 		self.vecWeights = []
-		# set up the weights with initial value 0 - will be updated with putWeights
+		# set up the weights with random initial value - will be updated with putWeights
 		for i in range(self.numInputs):
-			self.vecWeights.append(0)
+			self.vecWeights.append(random.random())
 
 class NeuronLayer:
 	def __init__(self, numNeurons, numInputsPerNeuron):
@@ -147,7 +162,7 @@ class Population:
 		for i in range(popSize):
 			weights = []
 			for j in range(self.chromoLength):
-				weights.append(random.uniform(-1, 1))
+				weights.append(random.random())
 			g = Genome(weights, 0)
 			vecPop.append(g)
 
