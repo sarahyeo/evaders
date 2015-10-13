@@ -94,4 +94,75 @@ class NeuralNet:
 				outputs.append(sigmoid(netInput, 1.0))
 		return outputs
 
+class Genome:
+	def __init__(self, weights, fitness):
+		self.vecWeights = weights
+		self.fitness = fitness
+
+class GenAlg:
+	def __init__(self, popSize, mutRate, crossRate, numWeights):
+		self.popSize = popSize
+		self.chromoLength = numWeights
+		self.totalFitness = 0
+		self.bestFitness = 0
+		self.averageFitness = 0
+		self.worstFitness = 0
+		self.fittestGenome = 0 # index in pop
+		self.generation = 0
+
+		self.mutationRate = mutRate # 0.05 to 0.3
+		self.crossoverRate = crossRate # 0.7
+
+		self.vecPop = []
+		for i in range(popSize):
+			weights = []
+			for j in range(self.chromoLength):
+				weights.append(random.uniform(-1, 1))
+			g = Genome(weights, 0)
+			vecPop.append(g)
+
+	def crossover(self, mum, dad, daughter1, daughter2):
+		#!!! TODO
+
+	def mutate(self, chromo):
+		#!!!! TODO
+
+	# Implemented using stochastic acceptance - O(1) time
+	# selected genome i accepted with probability fittness[i]/totalFittness
+	def rouletteSelect(self):
+		total = self.totalFitness
+		notAccepted = True
+		while notAccepted:
+			index = random.randint(0, popSize)
+			if random.random() < vecPop[index].fitness/totalFitness:
+				notAccepted = False
+				return vecPop[index]
+
+	def getnBest(self, nBest, numCopies, pop):
+		#!!!! TODO
+
+	def calculateBestWorstAvTot(self):
+		total = 0
+		best = -1000000000
+		best_index = -1
+		worst = 1000000000
+		for index, g in enumerate(self.vecPop):
+			total += g.fitness
+			if g.fitness > best:
+				best = g.fitness
+				best_index = index
+			if g.fitness < worst:
+				worst = g.fitness
+		self.totalFitness = total
+		self.bestFitness = best
+		self.worstFitness = worst
+		self.averageFitness = total / popSize
+		self.fittestGenome = best_index
 		
+	def reset(self):
+		#!!!! TODO
+
+	# return array of genome
+	def evolvePop(self, old_pop): 
+		#!!!! TODO
+
