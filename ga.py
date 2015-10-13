@@ -12,9 +12,9 @@ class Neuron:
 		self.numInputs = inputs + 1
 		# weights for each input
 		self.vecWeights = []
-		# set up the weights with initial random value
+		# set up the weights with initial value 0 - will be updated with putWeights
 		for i in range(self.numInputs):
-			self.vecWeights.append(random.uniform(-1, 1))
+			self.vecWeights.append(0)
 
 class NeuronLayer:
 	def __init__(self, numNeurons, numInputsPerNeuron):
@@ -26,12 +26,33 @@ class NeuronLayer:
 			self.vecNeurons.append(n)
 
 class NeuralNet:
-	def __init__(self, numInputs, numOutputs, numHiddenLayers, neuronsPerHiddenLyr, layers):
+	# Link up neurons in feedforward netowrk
+	def __init__(self, numInputs, numOutputs, numHiddenLayers, neuronsPerHiddenLyr):
 		self.numInputs = numInputs
 		self.numOutputs = numOutputs
 		self.numHiddenLayers = numHiddenLayers
 		self.neuronsPerHiddenLyr = neuronsPerHiddenLyr
-		self.vecLayers = layers
+		self.vecLayers = []
+
+		if numHiddenLayers > 0:
+			# create first hidden layer - accenpts input from input layer
+			hl1 = NeuronLayer(neuronsPerHiddenLyr, numInputs)
+			vecLayers.append(hl1)
+
+			# create any other hidden layers - accepts input from previous hidden layer
+			for i in range(numHiddenLayers-1):
+				hli = NeuronLayer(neuronsPerHiddenLyr, neuronsPerHiddenLyr)
+				vecLayers.append(hli)
+
+			# create output layer - accepts input from hidden layer
+			ol = NeuronLayer(numOutputs, neuronsPerHiddenLyr)
+			vecLayers.append(ol)
+		else:
+			# no hidden layers
+			# crete output layer - accempts input from input layer
+			ol = NeuronLayer(numOutputs, numInputs)
+			vecLayers.append(ol)
+
 
 	# gets the weights from the NN (return list of weights)
 	def getWeights(self):
@@ -53,7 +74,8 @@ class NeuralNet:
 		for i in range(numHiddenLayers):
 			for k in range(vecLayers[i].numNeurons):
 				for m in range(vecLayers[i].vecNeurons[k].numInputs-1):
-					vecLayers[i].vecNeurons[k].vecWeights[m] = weights[index++] 
+					vecLayers[i].vecNeurons[k].vecWeights[m] = weights[index]
+					index += 1 
 
 	# sigmoid response curve
 	def sigmoid(self, activiation, response):
@@ -83,7 +105,8 @@ class NeuralNet:
 				# for each input into neuron (minus the bias) sum weight*input
 				# wSum = sum from i=1 to n (weight[i] * input[i]), n is numInputs
 				for k in range(numInputs-1): 
-					netInput += vecLayers[i].vecNeurons[j].vecWeights[k]*inputs[index++]
+					netInput += vecLayers[i].vecNeurons[j].vecWeights[k]*inputs[index]
+					index += 1
 
 				# add the bias
 				# wSum - T, where T is threashold/bias value	
@@ -113,13 +136,14 @@ class Population:
 		self.indexBestFitness = 0 
 
 		# initalize all genomes with random weights
+		# Each genome allocated to respective NeuralNetwork via putWeights
 		self.vecGenomes = []
-		# for i in range(popSize):
-		# 	weights = []
-		# 	for j in range(self.chromoLength):
-		# 		weights.append(random.uniform(-1, 1))
-		# 	g = Genome(weights, 0)
-		# 	vecPop.append(g)
+		for i in range(popSize):
+			weights = []
+			for j in range(self.chromoLength):
+				weights.append(random.uniform(-1, 1))
+			g = Genome(weights, 0)
+			vecPop.append(g)
 
 	def calcBestFitneess(self):
 		fitnesses = map(lambda genome: genome.fitness, self.vecGenomes)
@@ -141,6 +165,13 @@ class Population:
 	def replacePop(self, new_pop):
 		self.vecGenomes = new_pop
 
+	def resetPop(self):
+		self.totalFitness = 0
+		self.bestFitness = 0
+		self.averageFitness = 0
+		self.worstFitness = 9999999;
+
+
 
 class GenAlg:
 	def __init__(self, mutRate, crossRate):
@@ -151,11 +182,13 @@ class GenAlg:
 
 	# One-point crossover
 	def crossover(self, mumWeights, dadWeights):
-		if random.random() < self.crossoverRate:
+		if random.random() > self.crossoverRate or mumWeights == dadWeights:
+			return (mumWeights, dadWeights)
+		else:
 			crossPoint = random.randint(0, len(mumWeights))
 			daughter1 = mumWeights[:crossPoint] + dadWeights[crossPoint:]
 			daughter2 = dadWeights[:crossPoint] + mumWeights[crossPoint:]
-		return (daughter1, daughter2)
+			return (daughter1, daughter2)
 
 	# Uniform mutation - replaces value at chosen gene with rand weight
 	# return list of weights
@@ -173,12 +206,8 @@ class GenAlg:
 			index = random.randint(0, pop.popSize)
 			if random.random() < pop.vecGenomes[index].fitness/pop.totalFitness:
 				return pop.vecGenomes[index]
-
-	def getnBest(self, nBest, numCopies, pop):
-		#!!!! TODO
 		
-	def reset(self):
-		#!!!! TODO
+
 
 
 	# Generates new generation population through fitness-based selection
@@ -186,24 +215,24 @@ class GenAlg:
 	# return list of genomes
 	def evolve(self, pop): 
 		newGenomes = []
+		pop.reset()
 		pop.calcFitnessFields()
 
 		done = False
 		while not done:
+			# select two chromosones using roulette wheel selection
 			mumWeights = rouletteSelect(pop).weights
 			dadWeights = rouletteSelect(pop).weights
+			# create offspring via crossover
 			daughters = crossover(mumWeights, dadWeights)
 			for d in daughters:
+				# now we mutate
 				g = Genome(mutate(d), 0)
 				if pop.popSize > len(newGenomes):
 					newGenomes.append(g)
 				else:
 					done = True
 
+		pop.replacePop(newGenomes)
 		return newGenomes
-
-
-
-
-
 
