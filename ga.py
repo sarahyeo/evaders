@@ -138,6 +138,9 @@ class Population:
 		self.calcWorstFitness()
 		self.calcAverageFitness()
 
+	def replacePop(self, new_pop):
+		self.vecGenomes = new_pop
+
 
 class GenAlg:
 	def __init__(self, mutRate, crossRate):
@@ -146,25 +149,30 @@ class GenAlg:
 		self.mutationRate = mutRate # 0.05 to 0.3
 		self.crossoverRate = crossRate # 0.7
 
-	def crossover(self, mum, dad, daughter1, daughter2):
-		#!!! TODO
+	# One-point crossover
+	def crossover(self, mumWeights, dadWeights):
+		if random.random() < self.crossoverRate:
+			crossPoint = random.randint(0, len(mumWeights))
+			daughter1 = mumWeights[:crossPoint] + dadWeights[crossPoint:]
+			daughter2 = dadWeights[:crossPoint] + mumWeights[crossPoint:]
+		return (daughter1, daughter2)
 
 	# Uniform mutation - replaces value at chosen gene with rand weight
-	def mutate(self, genome):
-		for i in range(genome.weights):
+	# return list of weights
+	def mutate(self, weights):
+		for i in range(weights):
 			if random.random() < mutationRate:
-				genome.weights[i] = random.uniform(-1, 1)
+				weights[i] = random.uniform(-1, 1)
+		return weights
 
 	# Implemented using stochastic acceptance - O(1) time
-	# selected genome i accepted with probability fittness[i]/totalFittness
+	# Selected genome i accepted with probability fittness[i]/totalFittness
+	# return genome
 	def rouletteSelect(self, pop):
-		total = pop.totalFitness
-		notAccepted = True
-		while notAccepted:
-			index = random.randint(0, popSize)
-			if random.random() < vecPop[index].fitness/totalFitness:
-				notAccepted = False
-				return vecPop[index]
+		while True:
+			index = random.randint(0, pop.popSize)
+			if random.random() < pop.vecGenomes[index].fitness/pop.totalFitness:
+				return pop.vecGenomes[index]
 
 	def getnBest(self, nBest, numCopies, pop):
 		#!!!! TODO
@@ -172,7 +180,30 @@ class GenAlg:
 	def reset(self):
 		#!!!! TODO
 
-	# return array of genome
-	def evolvePop(self, old_pop): 
-		#!!!! TODO
+
+	# Generates new generation population through fitness-based selection
+	# and combination of genetic operations: crossover and mutation
+	# return list of genomes
+	def evolve(self, pop): 
+		newGenomes = []
+		pop.calcFitnessFields()
+
+		done = False
+		while not done:
+			mumWeights = rouletteSelect(pop).weights
+			dadWeights = rouletteSelect(pop).weights
+			daughters = crossover(mumWeights, dadWeights)
+			for d in daughters:
+				g = Genome(mutate(d), 0)
+				if pop.popSize > len(newGenomes):
+					newGenomes.append(g)
+				else:
+					done = True
+
+		return newGenomes
+
+
+
+
+
 
