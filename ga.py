@@ -149,8 +149,11 @@ class GenAlg:
 	def crossover(self, mum, dad, daughter1, daughter2):
 		#!!! TODO
 
-	def mutate(self, chromo):
-		#!!!! TODO
+	# Uniform mutation - replaces value at chosen gene with rand weight
+	def mutate(self, genome):
+		for i in range(genome.weights):
+			if random.random() < mutationRate:
+				genome.weights[i] = random.uniform(-1, 1)
 
 	# Implemented using stochastic acceptance - O(1) time
 	# selected genome i accepted with probability fittness[i]/totalFittness
