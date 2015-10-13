@@ -58,9 +58,12 @@ class NeuralNet:
 	def getWeights(self):
 		index = 0
 		weights = []
-		for i in range(numHiddenLayers):
+		# for each hidden laery + output layer
+		for i in range(numHiddenLayers + 1):
+			# for each neruon in layer
 			for k in range(vecLayers[i].numNeurons):
-				for m in range(vecLayers[i].vecNeurons[k].numInputs-1):
+				# for each weight in neuron - including bias
+				for m in range(vecLayers[i].vecNeurons[k].numInputs):
 					weights.append(vecLayers[i].vecNeurons[k].vecWeights[m])
 		return weights
 
@@ -71,9 +74,12 @@ class NeuralNet:
 	# replaces the weights with new ones
 	def putWeights(self, weights):
 		index = 0
-		for i in range(numHiddenLayers):
+		# for each hidden laery + output layer
+		for i in range(numHiddenLayers + 1):
+			# for each neruon in layer
 			for k in range(vecLayers[i].numNeurons):
-				for m in range(vecLayers[i].vecNeurons[k].numInputs-1):
+				# for each weight in neuron - including bias
+				for m in range(vecLayers[i].vecNeurons[k].numInputs):
 					vecLayers[i].vecNeurons[k].vecWeights[m] = weights[index]
 					index += 1 
 
